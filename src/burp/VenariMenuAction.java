@@ -25,8 +25,8 @@ public class VenariMenuAction extends AbstractAction {
     private final IBurpExtenderCallbacks callbacks;
     private final BurpMenu menu;
 
-    public VenariMenuAction(BurpMenu menu, RestClient restClient, PrintWriter stdout,
-            IBurpExtenderCallbacks callbacks, String sessionID) {
+    public VenariMenuAction(BurpMenu menu, RestClient restClient, PrintWriter stdout, IBurpExtenderCallbacks callbacks,
+            String sessionID) {
         super(menu.getName());
         this.menu = menu;
         this.restClient = restClient;
@@ -54,41 +54,35 @@ public class VenariMenuAction extends AbstractAction {
                     String errorMessage = result.getErrorMessage();
                     if (errorMessage == null || errorMessage.length() == 0) {
                         stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
-                    }
-                    else {
+                    } else {
                         stdout.println("Unable to execute menu: " + menuName + ". " + errorMessage);
                     }
-                }
-                else {
+                } else {
                     final BurpNotifications notifications;
                     final String finishMessage;
                     if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_1) { // Run Scan
                         stdout.println("Started Venari scan for " + menuName + "...");
                         finishMessage = "Finished Venari scan for " + menuName + ".";
                         notifications = null;
-                    }
-                    else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_2) { // Get Site Map 
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_2) { // Get Site Map
                         stdout.println("Getting site map for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting site map for " + menuName + ".";
-                    }
-                    else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_3) { // Get Issues
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_3) { // Get Issues
                         stdout.println("Getting issues for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting issues for " + menuName + ".";
-                    }
-                    else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_4) { // Get Scan
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_4) { // Get Scan
                         stdout.println("Getting scan for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished scan for " + menuName + ".";
-                    }
-                    else {
+                    } else {
                         notifications = null;
                         finishMessage = "";
                     }
@@ -101,8 +95,7 @@ public class VenariMenuAction extends AbstractAction {
                                     BurpNotifications scanNotifications = null;
                                     if (notifications == null) {
                                         scanNotifications = restClient.getBurpNotifications(token, sessionID);
-                                    }
-                                    else {
+                                    } else {
                                         scanNotifications = notifications;
                                     }
                                     if (scanNotifications == null || scanNotifications.isIsComplete()) {
@@ -112,8 +105,7 @@ public class VenariMenuAction extends AbstractAction {
                                         List<BurpNotification> changes = scanNotifications.getChanges();
                                         if (changes == null) {
                                             stdout.println("changes is null");
-                                        }
-                                        else if (changes.size() == 0) {
+                                        } else if (changes.size() == 0) {
                                             stdout.println("changes is empty");
                                         }
                                         if (changes != null && changes.size() > 0) {
@@ -143,21 +135,23 @@ public class VenariMenuAction extends AbstractAction {
                                                     }
                                                     BurpIssue burpIssue = restClient.getBurpIssue(token, sessionID,
                                                             change.getID(), applicationName, menu.getScanID());
-                                                    IScanIssue issue = new Issue(burpIssue, callbacks);
-                                                    stdout.println("Found issue: " + issue.getIssueName());
-                                                    IHttpRequestResponse[] httpMessages = issue.getHttpMessages();
-                                                    if (httpMessages != null && httpMessages.length > 0) {
-                                                        stdout.println("Issue locations:");
-                                                        for (int j = 0; j < httpMessages.length; j++) {
-                                                            IHttpRequestResponse messageInfo = httpMessages[j];
-                                                            IRequestInfo requestInfo = callbacks.getHelpers()
-                                                                    .analyzeRequest(messageInfo.getHttpService(),
-                                                                            messageInfo.getRequest());
-                                                            stdout.println("  (" + requestInfo.getMethod() + ") "
-                                                                    + requestInfo.getUrl());
+                                                    if (burpIssue != null) {
+                                                        IScanIssue issue = new Issue(burpIssue, callbacks);
+                                                        stdout.println("Found issue: " + issue.getIssueName());
+                                                        IHttpRequestResponse[] httpMessages = issue.getHttpMessages();
+                                                        if (httpMessages != null && httpMessages.length > 0) {
+                                                            stdout.println("Issue locations:");
+                                                            for (int j = 0; j < httpMessages.length; j++) {
+                                                                IHttpRequestResponse messageInfo = httpMessages[j];
+                                                                IRequestInfo requestInfo = callbacks.getHelpers()
+                                                                        .analyzeRequest(messageInfo.getHttpService(),
+                                                                                messageInfo.getRequest());
+                                                                stdout.println("  (" + requestInfo.getMethod() + ") "
+                                                                        + requestInfo.getUrl());
+                                                            }
                                                         }
+                                                        callbacks.addScanIssue(issue);
                                                     }
-                                                    callbacks.addScanIssue(issue);
                                                 }
                                             }
                                         }
