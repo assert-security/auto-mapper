@@ -3,6 +3,7 @@ package burp;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.UUID;
 
 import javax.swing.AbstractAction;
 
@@ -103,17 +104,17 @@ public class VenariMenuAction extends AbstractAction {
                                     }
                                     if (scanNotifications != null) {
                                         List<BurpNotification> changes = scanNotifications.getChanges();
-                                        if (changes == null) {
-                                            stdout.println("changes is null");
-                                        } else if (changes.size() == 0) {
-                                            stdout.println("changes is empty");
-                                        }
                                         if (changes != null && changes.size() > 0) {
                                             for (int i = 0; i < changes.size(); i++) {
                                                 BurpNotification change = changes.get(i);
+                                                UUID scanID = menu.getScanID();
+                                                if (scanID == null || scanID == UUID
+                                                        .fromString("00000000-0000-0000-0000-000000000000")) {
+                                                    scanID = result.getScanID();
+                                                }
                                                 if (change.getType() == TypeEnum.NUMBER_0) { // site map
                                                     List<BurpTraffic> traffic = restClient.getBurpTraffic(token,
-                                                            sessionID, change.getID(), menu.getScanID());
+                                                            sessionID, change.getID(), scanID);
                                                     if (traffic != null && traffic.size() > 0) {
                                                         for (int j = 0; j < traffic.size(); j++) {
                                                             BurpTraffic trafficItem = traffic.get(j);
@@ -134,7 +135,7 @@ public class VenariMenuAction extends AbstractAction {
                                                         applicationName = menu.getName();
                                                     }
                                                     BurpIssue burpIssue = restClient.getBurpIssue(token, sessionID,
-                                                            change.getID(), applicationName, menu.getScanID());
+                                                            change.getID(), applicationName, scanID);
                                                     if (burpIssue != null) {
                                                         IScanIssue issue = new Issue(burpIssue, callbacks);
                                                         stdout.println("Found issue: " + issue.getIssueName());
