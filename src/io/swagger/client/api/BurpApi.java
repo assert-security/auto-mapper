@@ -61,366 +61,7 @@ public class BurpApi {
     }
 
     /**
-     * Build call for closeBurpSession
-     * @param sessionID  (optional)
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public com.squareup.okhttp.Call closeBurpSessionCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api/burp/session/close";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (sessionID != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("sessionID", sessionID));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "text/plain", "application/json", "text/json"
-        };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
-        }
-
-        String[] localVarAuthNames = new String[] {  };
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call closeBurpSessionValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-
-        com.squareup.okhttp.Call call = closeBurpSessionCall(sessionID, progressListener, progressRequestListener);
-        return call;
-
-    }
-
-    /**
-     * Close Burp Session
-     * 
-     * @param sessionID  (optional)
-     * @return OperationResultData
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public OperationResultData closeBurpSession(String sessionID) throws ApiException {
-        ApiResponse<OperationResultData> resp = closeBurpSessionWithHttpInfo(sessionID);
-        return resp.getData();
-    }
-
-    /**
-     * Close Burp Session
-     * 
-     * @param sessionID  (optional)
-     * @return ApiResponse&lt;OperationResultData&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<OperationResultData> closeBurpSessionWithHttpInfo(String sessionID) throws ApiException {
-        com.squareup.okhttp.Call call = closeBurpSessionValidateBeforeCall(sessionID, null, null);
-        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * Close Burp Session (asynchronously)
-     * 
-     * @param sessionID  (optional)
-     * @param callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     */
-    public com.squareup.okhttp.Call closeBurpSessionAsync(String sessionID, final ApiCallback<OperationResultData> callback) throws ApiException {
-
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = closeBurpSessionValidateBeforeCall(sessionID, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
-        return call;
-    }
-    /**
-     * Build call for createBurpSession
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public com.squareup.okhttp.Call createBurpSessionCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api/burp/session/create";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "text/plain", "application/json", "text/json"
-        };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
-        }
-
-        String[] localVarAuthNames = new String[] {  };
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call createBurpSessionValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-
-        com.squareup.okhttp.Call call = createBurpSessionCall(progressListener, progressRequestListener);
-        return call;
-
-    }
-
-    /**
-     * Create Burp Session
-     * 
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public String createBurpSession() throws ApiException {
-        ApiResponse<String> resp = createBurpSessionWithHttpInfo();
-        return resp.getData();
-    }
-
-    /**
-     * Create Burp Session
-     * 
-     * @return ApiResponse&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<String> createBurpSessionWithHttpInfo() throws ApiException {
-        com.squareup.okhttp.Call call = createBurpSessionValidateBeforeCall(null, null);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * Create Burp Session (asynchronously)
-     * 
-     * @param callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     */
-    public com.squareup.okhttp.Call createBurpSessionAsync(final ApiCallback<String> callback) throws ApiException {
-
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = createBurpSessionValidateBeforeCall(progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
-        return call;
-    }
-    /**
-     * Build call for executeBurpMenu
-     * @param sessionID  (required)
-     * @param menu  (optional)
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public com.squareup.okhttp.Call executeBurpMenuCall(String sessionID, BurpMenu menu, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Object localVarPostBody = menu;
-
-        // create path and map variables
-        String localVarPath = "/api/burp/menu/execute/{sessionID}"
-            .replaceAll("\\{" + "sessionID" + "\\}", apiClient.escapeString(sessionID.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "text/plain", "application/json", "text/json"
-        };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            "application/json-patch+json", "application/json", "text/json", "application/_*+json"
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
-        }
-
-        String[] localVarAuthNames = new String[] {  };
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call executeBurpMenuValidateBeforeCall(String sessionID, BurpMenu menu, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        // verify the required parameter 'sessionID' is set
-        if (sessionID == null) {
-            throw new ApiException("Missing the required parameter 'sessionID' when calling executeBurpMenu(Async)");
-        }
-        
-
-        com.squareup.okhttp.Call call = executeBurpMenuCall(sessionID, menu, progressListener, progressRequestListener);
-        return call;
-
-    }
-
-    /**
-     * Execute Burp Menu
-     * 
-     * @param sessionID  (required)
-     * @param menu  (optional)
-     * @return ExecuteBurpMenuResult
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ExecuteBurpMenuResult executeBurpMenu(String sessionID, BurpMenu menu) throws ApiException {
-        ApiResponse<ExecuteBurpMenuResult> resp = executeBurpMenuWithHttpInfo(sessionID, menu);
-        return resp.getData();
-    }
-
-    /**
-     * Execute Burp Menu
-     * 
-     * @param sessionID  (required)
-     * @param menu  (optional)
-     * @return ApiResponse&lt;ExecuteBurpMenuResult&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<ExecuteBurpMenuResult> executeBurpMenuWithHttpInfo(String sessionID, BurpMenu menu) throws ApiException {
-        com.squareup.okhttp.Call call = executeBurpMenuValidateBeforeCall(sessionID, menu, null, null);
-        Type localVarReturnType = new TypeToken<ExecuteBurpMenuResult>(){}.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * Execute Burp Menu (asynchronously)
-     * 
-     * @param sessionID  (required)
-     * @param menu  (optional)
-     * @param callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     */
-    public com.squareup.okhttp.Call executeBurpMenuAsync(String sessionID, BurpMenu menu, final ApiCallback<ExecuteBurpMenuResult> callback) throws ApiException {
-
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = executeBurpMenuValidateBeforeCall(sessionID, menu, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<ExecuteBurpMenuResult>(){}.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
-        return call;
-    }
-    /**
-     * Build call for getBurpIssue
+     * Build call for apiBurpIssueGet
      * @param sessionID  (optional)
      * @param id  (optional)
      * @param applicationName  (optional)
@@ -430,7 +71,7 @@ public class BurpApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call getBurpIssueCall(String sessionID, Long id, String applicationName, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpIssueGetCall(String sessionID, Long id, String applicationName, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -480,10 +121,10 @@ public class BurpApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getBurpIssueValidateBeforeCall(String sessionID, Long id, String applicationName, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apiBurpIssueGetValidateBeforeCall(String sessionID, Long id, String applicationName, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = getBurpIssueCall(sessionID, id, applicationName, scanID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpIssueGetCall(sessionID, id, applicationName, scanID, progressListener, progressRequestListener);
         return call;
 
     }
@@ -498,8 +139,8 @@ public class BurpApi {
      * @return BurpIssue
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public BurpIssue getBurpIssue(String sessionID, Long id, String applicationName, UUID scanID) throws ApiException {
-        ApiResponse<BurpIssue> resp = getBurpIssueWithHttpInfo(sessionID, id, applicationName, scanID);
+    public BurpIssue apiBurpIssueGet(String sessionID, Long id, String applicationName, UUID scanID) throws ApiException {
+        ApiResponse<BurpIssue> resp = apiBurpIssueGetWithHttpInfo(sessionID, id, applicationName, scanID);
         return resp.getData();
     }
 
@@ -513,8 +154,8 @@ public class BurpApi {
      * @return ApiResponse&lt;BurpIssue&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<BurpIssue> getBurpIssueWithHttpInfo(String sessionID, Long id, String applicationName, UUID scanID) throws ApiException {
-        com.squareup.okhttp.Call call = getBurpIssueValidateBeforeCall(sessionID, id, applicationName, scanID, null, null);
+    public ApiResponse<BurpIssue> apiBurpIssueGetWithHttpInfo(String sessionID, Long id, String applicationName, UUID scanID) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpIssueGetValidateBeforeCall(sessionID, id, applicationName, scanID, null, null);
         Type localVarReturnType = new TypeToken<BurpIssue>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -530,7 +171,7 @@ public class BurpApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getBurpIssueAsync(String sessionID, Long id, String applicationName, UUID scanID, final ApiCallback<BurpIssue> callback) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpIssueGetAsync(String sessionID, Long id, String applicationName, UUID scanID, final ApiCallback<BurpIssue> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -551,20 +192,147 @@ public class BurpApi {
             };
         }
 
-        com.squareup.okhttp.Call call = getBurpIssueValidateBeforeCall(sessionID, id, applicationName, scanID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpIssueGetValidateBeforeCall(sessionID, id, applicationName, scanID, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<BurpIssue>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for getBurpMenus
+     * Build call for apiBurpMenuExecuteSessionIDPost
+     * @param sessionID  (required)
+     * @param body  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpMenuExecuteSessionIDPostCall(String sessionID, BurpMenu body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/api/burp/menu/execute/{sessionID}"
+            .replaceAll("\\{" + "sessionID" + "\\}", apiClient.escapeString(sessionID.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "text/plain", "application/json", "text/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json-patch+json", "application/json", "text/json", "application/_*+json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call apiBurpMenuExecuteSessionIDPostValidateBeforeCall(String sessionID, BurpMenu body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'sessionID' is set
+        if (sessionID == null) {
+            throw new ApiException("Missing the required parameter 'sessionID' when calling apiBurpMenuExecuteSessionIDPost(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = apiBurpMenuExecuteSessionIDPostCall(sessionID, body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Execute Burp Menu
+     * 
+     * @param sessionID  (required)
+     * @param body  (optional)
+     * @return ExecuteBurpMenuResult
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ExecuteBurpMenuResult apiBurpMenuExecuteSessionIDPost(String sessionID, BurpMenu body) throws ApiException {
+        ApiResponse<ExecuteBurpMenuResult> resp = apiBurpMenuExecuteSessionIDPostWithHttpInfo(sessionID, body);
+        return resp.getData();
+    }
+
+    /**
+     * Execute Burp Menu
+     * 
+     * @param sessionID  (required)
+     * @param body  (optional)
+     * @return ApiResponse&lt;ExecuteBurpMenuResult&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ExecuteBurpMenuResult> apiBurpMenuExecuteSessionIDPostWithHttpInfo(String sessionID, BurpMenu body) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpMenuExecuteSessionIDPostValidateBeforeCall(sessionID, body, null, null);
+        Type localVarReturnType = new TypeToken<ExecuteBurpMenuResult>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Execute Burp Menu (asynchronously)
+     * 
+     * @param sessionID  (required)
+     * @param body  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpMenuExecuteSessionIDPostAsync(String sessionID, BurpMenu body, final ApiCallback<ExecuteBurpMenuResult> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = apiBurpMenuExecuteSessionIDPostValidateBeforeCall(sessionID, body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ExecuteBurpMenuResult>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for apiBurpMenusGet
      * @param sessionID  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call getBurpMenusCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpMenusGetCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -608,10 +376,10 @@ public class BurpApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getBurpMenusValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apiBurpMenusGetValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = getBurpMenusCall(sessionID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpMenusGetCall(sessionID, progressListener, progressRequestListener);
         return call;
 
     }
@@ -623,8 +391,8 @@ public class BurpApi {
      * @return List&lt;BurpMenu&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public List<BurpMenu> getBurpMenus(String sessionID) throws ApiException {
-        ApiResponse<List<BurpMenu>> resp = getBurpMenusWithHttpInfo(sessionID);
+    public List<BurpMenu> apiBurpMenusGet(String sessionID) throws ApiException {
+        ApiResponse<List<BurpMenu>> resp = apiBurpMenusGetWithHttpInfo(sessionID);
         return resp.getData();
     }
 
@@ -635,8 +403,8 @@ public class BurpApi {
      * @return ApiResponse&lt;List&lt;BurpMenu&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<List<BurpMenu>> getBurpMenusWithHttpInfo(String sessionID) throws ApiException {
-        com.squareup.okhttp.Call call = getBurpMenusValidateBeforeCall(sessionID, null, null);
+    public ApiResponse<List<BurpMenu>> apiBurpMenusGetWithHttpInfo(String sessionID) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpMenusGetValidateBeforeCall(sessionID, null, null);
         Type localVarReturnType = new TypeToken<List<BurpMenu>>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -649,7 +417,7 @@ public class BurpApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getBurpMenusAsync(String sessionID, final ApiCallback<List<BurpMenu>> callback) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpMenusGetAsync(String sessionID, final ApiCallback<List<BurpMenu>> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -670,20 +438,20 @@ public class BurpApi {
             };
         }
 
-        com.squareup.okhttp.Call call = getBurpMenusValidateBeforeCall(sessionID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpMenusGetValidateBeforeCall(sessionID, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<List<BurpMenu>>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for getBurpNotifications
+     * Build call for apiBurpNotificationsGet
      * @param sessionID  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call getBurpNotificationsCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpNotificationsGetCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -727,10 +495,10 @@ public class BurpApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getBurpNotificationsValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apiBurpNotificationsGetValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = getBurpNotificationsCall(sessionID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpNotificationsGetCall(sessionID, progressListener, progressRequestListener);
         return call;
 
     }
@@ -742,8 +510,8 @@ public class BurpApi {
      * @return BurpNotifications
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public BurpNotifications getBurpNotifications(String sessionID) throws ApiException {
-        ApiResponse<BurpNotifications> resp = getBurpNotificationsWithHttpInfo(sessionID);
+    public BurpNotifications apiBurpNotificationsGet(String sessionID) throws ApiException {
+        ApiResponse<BurpNotifications> resp = apiBurpNotificationsGetWithHttpInfo(sessionID);
         return resp.getData();
     }
 
@@ -754,8 +522,8 @@ public class BurpApi {
      * @return ApiResponse&lt;BurpNotifications&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<BurpNotifications> getBurpNotificationsWithHttpInfo(String sessionID) throws ApiException {
-        com.squareup.okhttp.Call call = getBurpNotificationsValidateBeforeCall(sessionID, null, null);
+    public ApiResponse<BurpNotifications> apiBurpNotificationsGetWithHttpInfo(String sessionID) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpNotificationsGetValidateBeforeCall(sessionID, null, null);
         Type localVarReturnType = new TypeToken<BurpNotifications>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -768,7 +536,7 @@ public class BurpApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getBurpNotificationsAsync(String sessionID, final ApiCallback<BurpNotifications> callback) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpNotificationsGetAsync(String sessionID, final ApiCallback<BurpNotifications> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -789,13 +557,245 @@ public class BurpApi {
             };
         }
 
-        com.squareup.okhttp.Call call = getBurpNotificationsValidateBeforeCall(sessionID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpNotificationsGetValidateBeforeCall(sessionID, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<BurpNotifications>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for getBurpTraffic
+     * Build call for apiBurpSessionCloseGet
+     * @param sessionID  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpSessionCloseGetCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api/burp/session/close";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (sessionID != null)
+        localVarQueryParams.addAll(apiClient.parameterToPair("sessionID", sessionID));
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "text/plain", "application/json", "text/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call apiBurpSessionCloseGetValidateBeforeCall(String sessionID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+
+        com.squareup.okhttp.Call call = apiBurpSessionCloseGetCall(sessionID, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Close Burp Session
+     * 
+     * @param sessionID  (optional)
+     * @return OperationResultData
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public OperationResultData apiBurpSessionCloseGet(String sessionID) throws ApiException {
+        ApiResponse<OperationResultData> resp = apiBurpSessionCloseGetWithHttpInfo(sessionID);
+        return resp.getData();
+    }
+
+    /**
+     * Close Burp Session
+     * 
+     * @param sessionID  (optional)
+     * @return ApiResponse&lt;OperationResultData&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<OperationResultData> apiBurpSessionCloseGetWithHttpInfo(String sessionID) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpSessionCloseGetValidateBeforeCall(sessionID, null, null);
+        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Close Burp Session (asynchronously)
+     * 
+     * @param sessionID  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpSessionCloseGetAsync(String sessionID, final ApiCallback<OperationResultData> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = apiBurpSessionCloseGetValidateBeforeCall(sessionID, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for apiBurpSessionCreateGet
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpSessionCreateGetCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api/burp/session/create";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "text/plain", "application/json", "text/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call apiBurpSessionCreateGetValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+
+        com.squareup.okhttp.Call call = apiBurpSessionCreateGetCall(progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Create Burp Session
+     * 
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public String apiBurpSessionCreateGet() throws ApiException {
+        ApiResponse<String> resp = apiBurpSessionCreateGetWithHttpInfo();
+        return resp.getData();
+    }
+
+    /**
+     * Create Burp Session
+     * 
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<String> apiBurpSessionCreateGetWithHttpInfo() throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpSessionCreateGetValidateBeforeCall(null, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Create Burp Session (asynchronously)
+     * 
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpSessionCreateGetAsync(final ApiCallback<String> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = apiBurpSessionCreateGetValidateBeforeCall(progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for apiBurpTrafficGet
      * @param sessionID  (optional)
      * @param id  (optional)
      * @param scanID  (optional)
@@ -804,7 +804,7 @@ public class BurpApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call getBurpTrafficCall(String sessionID, Long id, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpTrafficGetCall(String sessionID, Long id, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -852,10 +852,10 @@ public class BurpApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getBurpTrafficValidateBeforeCall(String sessionID, Long id, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apiBurpTrafficGetValidateBeforeCall(String sessionID, Long id, UUID scanID, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = getBurpTrafficCall(sessionID, id, scanID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpTrafficGetCall(sessionID, id, scanID, progressListener, progressRequestListener);
         return call;
 
     }
@@ -869,8 +869,8 @@ public class BurpApi {
      * @return List&lt;BurpTraffic&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public List<BurpTraffic> getBurpTraffic(String sessionID, Long id, UUID scanID) throws ApiException {
-        ApiResponse<List<BurpTraffic>> resp = getBurpTrafficWithHttpInfo(sessionID, id, scanID);
+    public List<BurpTraffic> apiBurpTrafficGet(String sessionID, Long id, UUID scanID) throws ApiException {
+        ApiResponse<List<BurpTraffic>> resp = apiBurpTrafficGetWithHttpInfo(sessionID, id, scanID);
         return resp.getData();
     }
 
@@ -883,8 +883,8 @@ public class BurpApi {
      * @return ApiResponse&lt;List&lt;BurpTraffic&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<List<BurpTraffic>> getBurpTrafficWithHttpInfo(String sessionID, Long id, UUID scanID) throws ApiException {
-        com.squareup.okhttp.Call call = getBurpTrafficValidateBeforeCall(sessionID, id, scanID, null, null);
+    public ApiResponse<List<BurpTraffic>> apiBurpTrafficGetWithHttpInfo(String sessionID, Long id, UUID scanID) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpTrafficGetValidateBeforeCall(sessionID, id, scanID, null, null);
         Type localVarReturnType = new TypeToken<List<BurpTraffic>>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -899,7 +899,7 @@ public class BurpApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getBurpTrafficAsync(String sessionID, Long id, UUID scanID, final ApiCallback<List<BurpTraffic>> callback) throws ApiException {
+    public com.squareup.okhttp.Call apiBurpTrafficGetAsync(String sessionID, Long id, UUID scanID, final ApiCallback<List<BurpTraffic>> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -920,8 +920,125 @@ public class BurpApi {
             };
         }
 
-        com.squareup.okhttp.Call call = getBurpTrafficValidateBeforeCall(sessionID, id, scanID, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apiBurpTrafficGetValidateBeforeCall(sessionID, id, scanID, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<List<BurpTraffic>>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for apiBurpTrafficPost
+     * @param body  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpTrafficPostCall(List<BurpTraffic> body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/api/burp/traffic";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "text/plain", "application/json", "text/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json-patch+json", "application/json", "text/json", "application/_*+json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call apiBurpTrafficPostValidateBeforeCall(List<BurpTraffic> body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+
+        com.squareup.okhttp.Call call = apiBurpTrafficPostCall(body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Set Burp Traffic
+     * 
+     * @param body  (optional)
+     * @return OperationResultData
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public OperationResultData apiBurpTrafficPost(List<BurpTraffic> body) throws ApiException {
+        ApiResponse<OperationResultData> resp = apiBurpTrafficPostWithHttpInfo(body);
+        return resp.getData();
+    }
+
+    /**
+     * Set Burp Traffic
+     * 
+     * @param body  (optional)
+     * @return ApiResponse&lt;OperationResultData&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<OperationResultData> apiBurpTrafficPostWithHttpInfo(List<BurpTraffic> body) throws ApiException {
+        com.squareup.okhttp.Call call = apiBurpTrafficPostValidateBeforeCall(body, null, null);
+        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Set Burp Traffic (asynchronously)
+     * 
+     * @param body  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call apiBurpTrafficPostAsync(List<BurpTraffic> body, final ApiCallback<OperationResultData> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = apiBurpTrafficPostValidateBeforeCall(body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<OperationResultData>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }

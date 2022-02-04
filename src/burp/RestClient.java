@@ -24,49 +24,56 @@ public class RestClient {
   public String createBurpSession(String token) throws ApiException {
     String ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.createBurpSession();
+    ret = burpApi.apiBurpSessionCreateGet();
     return ret;
   }
 
   public OperationResultData closeBurpSession(String token, String sessionID) throws ApiException {
     OperationResultData ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.closeBurpSession(sessionID);
+    ret = burpApi.apiBurpSessionCloseGet(sessionID);
     return ret;
   }
 
   public List<BurpMenu> getBurpMenus(String token, String sessionID) throws ApiException {
     List<BurpMenu> ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.getBurpMenus(sessionID);
+    ret = burpApi.apiBurpMenusGet(sessionID);
     return ret;
   }
 
   public ExecuteBurpMenuResult executeBurpMenu(String token, String sessionID, BurpMenu menu) throws ApiException {
     ExecuteBurpMenuResult ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.executeBurpMenu(sessionID, menu);
+    ret = burpApi.apiBurpMenuExecuteSessionIDPost(sessionID, menu);
     return ret;
   }
 
   public BurpNotifications getBurpNotifications(String token, String sessionID) throws ApiException {
     BurpNotifications ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.getBurpNotifications(sessionID);
+    ret = burpApi.apiBurpNotificationsGet(sessionID);
     return ret;
   }
 
   public List<BurpTraffic> getBurpTraffic(String token, String sessionID, Long id, UUID scanID) throws ApiException {
     List<BurpTraffic> ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.getBurpTraffic(sessionID, id, scanID);
+    ret = burpApi.apiBurpTrafficGet(sessionID, id, scanID);
+    return ret;
+  }
+
+  public OperationResultData setBurpTraffic(String token, List<BurpTraffic> traffic) throws ApiException {
+    OperationResultData ret = null;
+    burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
+    ret = burpApi.apiBurpTrafficPost(traffic);
     return ret;
   }
 
   public BurpIssue getBurpIssue(String token, String sessionID, Long id, String applicationName, UUID scanID) throws ApiException {
     BurpIssue ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
-    ret = burpApi.getBurpIssue(sessionID, id, applicationName, scanID);
+    ret = burpApi.apiBurpIssueGet(sessionID, id, applicationName, scanID);
     return ret;
   }
 

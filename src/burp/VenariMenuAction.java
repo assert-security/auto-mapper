@@ -2,13 +2,17 @@ package burp;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
 
+import io.swagger.client.ApiException;
+import io.swagger.client.model.BurpHttpService;
 import io.swagger.client.model.BurpIssue;
 import io.swagger.client.model.BurpMenu;
+import io.swagger.client.model.BurpMenuType;
 import io.swagger.client.model.BurpNotification;
 import io.swagger.client.model.BurpNotification.TypeEnum;
 import io.swagger.client.model.BurpNotifications;
@@ -25,15 +29,49 @@ public class VenariMenuAction extends AbstractAction {
     private final String sessionID;
     private final IBurpExtenderCallbacks callbacks;
     private final BurpMenu menu;
+    private final List<IHttpRequestResponse> traffic;
 
     public VenariMenuAction(BurpMenu menu, RestClient restClient, PrintWriter stdout, IBurpExtenderCallbacks callbacks,
-            String sessionID) {
+            String sessionID, List<IHttpRequestResponse> traffic) {
         super(menu.getName());
         this.menu = menu;
         this.restClient = restClient;
         this.stdout = stdout;
         this.sessionID = sessionID;
         this.callbacks = callbacks;
+        this.traffic = traffic;
+    }
+
+    private boolean doesMenuNeedTraffic(BurpMenu menu) {
+        boolean ret = false;
+        try {
+            ret = menu.isNeedTraffic();
+        }
+        catch (Exception ex) {
+
+        }
+        return ret;
+    }
+
+    private ExecuteBurpMenuResult executeMenuIfPossible(BurpMenu menu, String token) throws ApiException {
+        boolean needTraffic = doesMenuNeedTraffic(menu);
+        if (!needTraffic) {
+            String menuName = menu.getName();
+            ExecuteBurpMenuResult result = restClient.executeBurpMenu(token, sessionID, menu);
+            if (result == null) {
+                stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
+            }
+            if (!result.isSuccess()) {
+                String errorMessage = result.getErrorMessage();
+                if (errorMessage == null || errorMessage.length() == 0) {
+                    stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
+                } else {
+                    stdout.println("Unable to execute menu: " + menuName + ". " + errorMessage);
+                }
+            }
+            return result;
+        }
+        return null;
     }
 
     @Override
@@ -47,52 +85,96 @@ public class VenariMenuAction extends AbstractAction {
             stdout.println("Executing Venari menu: " + menuName);
             String token = BurpExtender.getVenariToken(stdout);
             if (token != null && !token.isEmpty()) {
-                ExecuteBurpMenuResult result = restClient.executeBurpMenu(token, sessionID, menu);
-                if (result == null) {
-                    stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
-                }
-                if (!result.isSuccess()) {
-                    String errorMessage = result.getErrorMessage();
-                    if (errorMessage == null || errorMessage.length() == 0) {
-                        stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
-                    } else {
-                        stdout.println("Unable to execute menu: " + menuName + ". " + errorMessage);
+                boolean canProcess = true;
+                ExecuteBurpMenuResult result = executeMenuIfPossible(menu, token);
+                if (doesMenuNeedTraffic(menu)) {
+                    if (this.traffic == null || this.traffic.size() == 0) {
+                        stdout.println("Unable to execute menu: " + menuName + ". No HTTP traffic selected.");
+                        canProcess = false;
                     }
-                } else {
+                    else {
+                        stdout.println("Invoking asynchronous menu " + menuName + "...");
+                    }
+                }
+                else if (result == null || !result.isSuccess()) {
+                    canProcess = false;
+                }
+                if (canProcess) {                    
                     final BurpNotifications notifications;
                     final String finishMessage;
-                    if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_1) { // Run Scan
+
+
+                    if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_1) { // Run Scan
                         stdout.println("Started Venari scan for " + menuName + "...");
                         finishMessage = "Finished Venari scan for " + menuName + ".";
                         notifications = null;
-                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_2) { // Get Site Map
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_2) { // Get Site Map
                         stdout.println("Getting site map for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting site map for " + menuName + ".";
-                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_3) { // Get Issues
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_3) { // Get Issues
                         stdout.println("Getting issues for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting issues for " + menuName + ".";
-                    } else if (menu.getType() == io.swagger.client.model.BurpMenu.TypeEnum.NUMBER_4) { // Get Scan
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_4) { // Get Scan
                         stdout.println("Getting scan for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished scan for " + menuName + ".";
+                    } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_4) { // Send To Venari
+                        stdout.println("Sending HTTP traffic to Venari Playground.");
+                        List<BurpTraffic> traffic = new ArrayList<BurpTraffic>();
+                        restClient.setBurpTraffic(token, traffic);
+                        finishMessage = "Executing background task to send HTTP traffic.";
+                        stdout.println(finishMessage);
+                        notifications = null;
                     } else {
                         notifications = null;
                         finishMessage = "";
                     }
+                    final List<IHttpRequestResponse> traffic = this.traffic;
                     Runnable r = new Runnable() {
                         public void run() {
                             Boolean processFlag = true;
                             Integer failCount = 0;
                             while (processFlag) {
                                 try {
+                                    if (menu.getType() == BurpMenuType.NUMBER_5) {
+                                        for (int i=0; i < traffic.size(); i++) {
+                                            IHttpRequestResponse messageInfo = traffic.get(i);
+                                            IExtensionHelpers helpers = callbacks.getHelpers();
+
+                                            IHttpService httpService = messageInfo.getHttpService();
+                                            IRequestInfo requestInfo = helpers.analyzeRequest(httpService,
+                                                    messageInfo.getRequest());
+                                            stdout.println("Sending to playground: (" + requestInfo.getMethod() + ") " + requestInfo.getUrl());
+                                            BurpTraffic burpTraffic = new BurpTraffic();                                            
+                                            burpTraffic.setBase64RequestBytes(helpers.base64Encode(messageInfo.getRequest()));
+                                            byte[] responseBytes = messageInfo.getResponse();
+                                            if (responseBytes != null && responseBytes.length > 0) {
+                                                burpTraffic.setBase64ResponseBytes(helpers.base64Encode(responseBytes));
+                                            }
+                                            BurpHttpService bHttpService = new BurpHttpService();
+                                            bHttpService.setHost(httpService.getHost());
+                                            bHttpService.setPort(httpService.getPort());
+                                            bHttpService.setScheme(httpService.getProtocol());
+                                            burpTraffic.setHttpService(bHttpService);
+                                            burpTraffic.setSessionID(sessionID);
+                                            List<BurpTraffic> btList = new ArrayList<BurpTraffic>();
+                                            btList.add(burpTraffic);
+                                            restClient.setBurpTraffic(token, btList);
+                                            restClient.executeBurpMenu(token, sessionID, menu);
+                                        }
+                                        break;
+                                    }
+                                    else if (result == null) {
+                                        break;
+                                    }
                                     BurpNotifications scanNotifications = null;
                                     if (notifications == null) {
                                         scanNotifications = restClient.getBurpNotifications(token, sessionID);

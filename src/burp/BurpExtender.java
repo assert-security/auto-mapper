@@ -11,12 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import io.swagger.client.model.BurpMenu;
-import io.swagger.client.model.BurpMenu.TypeEnum;
+import io.swagger.client.model.BurpMenuType;
 import io.swagger.client.model.OperationResultData;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener, IContextMenuFactory {
@@ -107,10 +106,24 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         List<JMenuItem> menuList = null;
         try {
             stdout.println("Creating Venari menu items...");
+            byte context = invocation.getInvocationContext();
+            ArrayList<IHttpRequestResponse> traffic = new ArrayList<IHttpRequestResponse>();
+            if (context == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST 
+                || context == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST
+                || context == IContextMenuInvocation.CONTEXT_PROXY_HISTORY
+                || context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TABLE
+                || context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
+                IHttpRequestResponse[] selectedTraffic = invocation.getSelectedMessages();
+                if (selectedTraffic != null && selectedTraffic.length > 0) {
+                    for (int i=0; i<selectedTraffic.length; i++) {
+                        traffic.add(selectedTraffic[i]);
+                    }
+                }
+            }
             String token = getVenariToken(stdout);
             if (token != null && !token.isEmpty()) {
                 List<BurpMenu> menus = restClient.getBurpMenus(token, sessionID);
-                menuList = createMenuItems(menus);
+                menuList = createMenuItems(menus, traffic);
             }
         } catch (Exception ex) {
             stdout.println("Unable to create Venari menu items. " + ex.toString());
@@ -118,25 +131,38 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         return menuList;
     }
 
-    private List<JMenuItem> createMenuItems(List<BurpMenu> menus) {
+    private boolean doesMenuNeedTraffic(BurpMenu menu) {
+        boolean ret = false;
+        try {
+            ret = menu.isNeedTraffic();
+        }
+        catch (Exception ex) {
+
+        }
+        return ret;
+    }
+
+    private List<JMenuItem> createMenuItems(List<BurpMenu> menus, List<IHttpRequestResponse> traffic) {
         List<JMenuItem> ret = new ArrayList<>();
         if (menus != null && menus.size() > 0) {
-            for (int i=0; i<menus.size(); i++) {
+            for (int i = 0; i < menus.size(); i++) {
                 BurpMenu menu = menus.get(i);
-                if (menu.getType() == TypeEnum.NUMBER_0) {
+                if (doesMenuNeedTraffic(menu) && !(traffic.size() > 0)) {
+                    continue;
+                }
+                if (menu.getType() == BurpMenuType.NUMBER_0) {
                     JMenu jmenu = new JMenu(menu.getName());
                     List<BurpMenu> submenus = menu.getSubMenus();
-                    List<JMenuItem> subjmenus = createMenuItems(submenus);
+                    List<JMenuItem> subjmenus = createMenuItems(submenus, traffic);
                     if (subjmenus != null && subjmenus.size() > 0) {
-                        for (int j=0; j<subjmenus.size(); j++) {
+                        for (int j = 0; j < subjmenus.size(); j++) {
                             jmenu.add(subjmenus.get(j));
                         }
                     }
                     ret.add(jmenu);
-                }
-                else {
+                } else {
                     JMenuItem menuItem = new JMenuItem(menu.getName());
-                    menuItem.setAction(new VenariMenuAction(menu, restClient, stdout, callbacks, sessionID));
+                    menuItem.setAction(new VenariMenuAction(menu, restClient, stdout, callbacks, sessionID, traffic));
                     ret.add(menuItem);
                 }
             }

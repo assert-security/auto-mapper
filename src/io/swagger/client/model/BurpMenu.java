@@ -22,74 +22,23 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.client.model.BurpMenu;
+import io.swagger.client.model.BurpMenuType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * BurpMenu
+ * 
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-10-20T09:30:08.127-04:00")
+@ApiModel(description = "")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-02-03T10:54:21.279-05:00")
 public class BurpMenu {
   @SerializedName("Name")
   private String name = null;
 
-  /**
-   * Gets or Sets type
-   */
-  @JsonAdapter(TypeEnum.Adapter.class)
-  public enum TypeEnum {
-    NUMBER_0(0),
-    
-    NUMBER_1(1),
-    
-    NUMBER_2(2),
-    
-    NUMBER_3(3),
-    
-    NUMBER_4(4);
-
-    private Integer value;
-
-    TypeEnum(Integer value) {
-      this.value = value;
-    }
-
-    public Integer getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    public static TypeEnum fromValue(String text) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
-        }
-      }
-      return null;
-    }
-
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TypeEnum read(final JsonReader jsonReader) throws IOException {
-        Integer value = jsonReader.nextInt();
-        return TypeEnum.fromValue(String.valueOf(value));
-      }
-    }
-  }
-
   @SerializedName("Type")
-  private TypeEnum type = null;
+  private BurpMenuType type = null;
 
   @SerializedName("ScanID")
   private UUID scanID = null;
@@ -99,6 +48,9 @@ public class BurpMenu {
 
   @SerializedName("ApplicationName")
   private String applicationName = null;
+
+  @SerializedName("NeedTraffic")
+  private Boolean needTraffic = null;
 
   public BurpMenu name(String name) {
     this.name = name;
@@ -118,7 +70,7 @@ public class BurpMenu {
     this.name = name;
   }
 
-  public BurpMenu type(TypeEnum type) {
+  public BurpMenu type(BurpMenuType type) {
     this.type = type;
     return this;
   }
@@ -128,11 +80,11 @@ public class BurpMenu {
    * @return type
   **/
   @ApiModelProperty(value = "")
-  public TypeEnum getType() {
+  public BurpMenuType getType() {
     return type;
   }
 
-  public void setType(TypeEnum type) {
+  public void setType(BurpMenuType type) {
     this.type = type;
   }
 
@@ -198,6 +150,24 @@ public class BurpMenu {
     this.applicationName = applicationName;
   }
 
+  public BurpMenu needTraffic(Boolean needTraffic) {
+    this.needTraffic = needTraffic;
+    return this;
+  }
+
+   /**
+   * Get needTraffic
+   * @return needTraffic
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isNeedTraffic() {
+    return needTraffic;
+  }
+
+  public void setNeedTraffic(Boolean needTraffic) {
+    this.needTraffic = needTraffic;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -212,12 +182,13 @@ public class BurpMenu {
         Objects.equals(this.type, burpMenu.type) &&
         Objects.equals(this.scanID, burpMenu.scanID) &&
         Objects.equals(this.subMenus, burpMenu.subMenus) &&
-        Objects.equals(this.applicationName, burpMenu.applicationName);
+        Objects.equals(this.applicationName, burpMenu.applicationName) &&
+        Objects.equals(this.needTraffic, burpMenu.needTraffic);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, type, scanID, subMenus, applicationName);
+    return Objects.hash(name, type, scanID, subMenus, applicationName, needTraffic);
   }
 
 
@@ -231,6 +202,7 @@ public class BurpMenu {
     sb.append("    scanID: ").append(toIndentedString(scanID)).append("\n");
     sb.append("    subMenus: ").append(toIndentedString(subMenus)).append("\n");
     sb.append("    applicationName: ").append(toIndentedString(applicationName)).append("\n");
+    sb.append("    needTraffic: ").append(toIndentedString(needTraffic)).append("\n");
     sb.append("}");
     return sb.toString();
   }
