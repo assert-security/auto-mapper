@@ -53,7 +53,7 @@ This extension requires Venari Community Edition (or higher) <a href='https://as
 - Run the command below:
 
 ```
-gradle fatJar
+gradle jar
 ```
 
 - The jar file will be written to the build/libs folder

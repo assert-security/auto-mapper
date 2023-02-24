@@ -1,13 +1,17 @@
 package burp;
 
 import java.awt.event.ActionEvent;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
 
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.core.ByteArray;
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.logging.Logging;
+import burp.api.montoya.scanner.audit.issues.AuditIssue;
 import io.swagger.client.ApiException;
 import io.swagger.client.model.BurpHttpService;
 import io.swagger.client.model.BurpIssue;
@@ -25,18 +29,18 @@ public class VenariMenuAction extends AbstractAction {
      */
     private static final long serialVersionUID = 1L;
     private final RestClient restClient;
-    private final PrintWriter stdout;
+    private final Logging logging;
     private final String sessionID;
-    private final IBurpExtenderCallbacks callbacks;
+    private final MontoyaApi callbacks;
     private final BurpMenu menu;
-    private final List<IHttpRequestResponse> traffic;
+    private final List<HttpRequestResponse> traffic;
 
-    public VenariMenuAction(BurpMenu menu, RestClient restClient, PrintWriter stdout, IBurpExtenderCallbacks callbacks,
-            String sessionID, List<IHttpRequestResponse> traffic) {
+    public VenariMenuAction(BurpMenu menu, RestClient restClient, Logging logging, MontoyaApi callbacks,
+            String sessionID, List<HttpRequestResponse> traffic) {
         super(menu.getName());
         this.menu = menu;
         this.restClient = restClient;
-        this.stdout = stdout;
+        this.logging = logging;
         this.sessionID = sessionID;
         this.callbacks = callbacks;
         this.traffic = traffic;
@@ -59,14 +63,14 @@ public class VenariMenuAction extends AbstractAction {
             String menuName = menu.getName();
             ExecuteBurpMenuResult result = restClient.executeBurpMenu(token, sessionID, menu);
             if (result == null) {
-                stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
+                logging.logToOutput("Unable to execute menu: " + menuName + ".  Unknown error.");
             }
             if (!result.isSuccess()) {
                 String errorMessage = result.getErrorMessage();
                 if (errorMessage == null || errorMessage.length() == 0) {
-                    stdout.println("Unable to execute menu: " + menuName + ".  Unknown error.");
+                    logging.logToOutput("Unable to execute menu: " + menuName + ".  Unknown error.");
                 } else {
-                    stdout.println("Unable to execute menu: " + menuName + ". " + errorMessage);
+                    logging.logToOutput("Unable to execute menu: " + menuName + ". " + errorMessage);
                 }
             }
             return result;
@@ -82,18 +86,18 @@ public class VenariMenuAction extends AbstractAction {
             menuName = "[" + applicationName + "]" + menuName;
         }
         try {
-            stdout.println("Executing Venari menu: " + menuName);
-            String token = BurpExtender.getVenariToken(stdout);
+            logging.logToOutput("Executing Venari menu: " + menuName);
+            String token = BurpExtender.getVenariToken(logging);
             if (token != null && !token.isEmpty()) {
                 boolean canProcess = true;
                 ExecuteBurpMenuResult result = executeMenuIfPossible(menu, token);
                 if (doesMenuNeedTraffic(menu)) {
                     if (this.traffic == null || this.traffic.size() == 0) {
-                        stdout.println("Unable to execute menu: " + menuName + ". No HTTP traffic selected.");
+                        logging.logToOutput("Unable to execute menu: " + menuName + ". No HTTP traffic selected.");
                         canProcess = false;
                     }
                     else {
-                        stdout.println("Invoking asynchronous menu " + menuName + "...");
+                        logging.logToOutput("Invoking asynchronous menu " + menuName + "...");
                     }
                 }
                 else if (result == null || !result.isSuccess()) {
@@ -105,39 +109,38 @@ public class VenariMenuAction extends AbstractAction {
 
 
                     if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_1) { // Run Scan
-                        stdout.println("Started Venari scan for " + menuName + "...");
+                        logging.logToOutput("Started Venari scan for " + menuName + "...");
                         finishMessage = "Finished Venari scan for " + menuName + ".";
                         notifications = null;
                     } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_2) { // Get Site Map
-                        stdout.println("Getting site map for " + menuName + "...");
+                        logging.logToOutput("Getting site map for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting site map for " + menuName + ".";
                     } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_3) { // Get Issues
-                        stdout.println("Getting issues for " + menuName + "...");
+                        logging.logToOutput("Getting issues for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished getting issues for " + menuName + ".";
                     } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_4) { // Get Scan
-                        stdout.println("Getting scan for " + menuName + "...");
+                        logging.logToOutput("Getting scan for " + menuName + "...");
                         notifications = new BurpNotifications();
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished scan for " + menuName + ".";
                     } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_4) { // Send To Venari
-                        stdout.println("Sending HTTP traffic to Venari Playground.");
+                        logging.logToOutput("Sending HTTP traffic to Venari Playground.");
                         List<BurpTraffic> traffic = new ArrayList<BurpTraffic>();
                         restClient.setBurpTraffic(token, traffic);
                         finishMessage = "Executing background task to send HTTP traffic.";
-                        stdout.println(finishMessage);
+                        logging.logToOutput(finishMessage);
                         notifications = null;
                     } else {
                         notifications = null;
                         finishMessage = "";
                     }
-                    final List<IHttpRequestResponse> traffic = this.traffic;
                     Runnable r = new Runnable() {
                         public void run() {
                             Boolean processFlag = true;
@@ -146,23 +149,28 @@ public class VenariMenuAction extends AbstractAction {
                                 try {
                                     if (menu.getType() == BurpMenuType.NUMBER_5) {
                                         for (int i=0; i < traffic.size(); i++) {
-                                            IHttpRequestResponse messageInfo = traffic.get(i);
-                                            IExtensionHelpers helpers = callbacks.getHelpers();
+                                            HttpRequestResponse messageInfo = traffic.get(i);
 
-                                            IHttpService httpService = messageInfo.getHttpService();
-                                            IRequestInfo requestInfo = helpers.analyzeRequest(httpService,
-                                                    messageInfo.getRequest());
-                                            stdout.println("Sending to playground: (" + requestInfo.getMethod() + ") " + requestInfo.getUrl());
+                                            String method = messageInfo.request().method();
+                                            String url = messageInfo.url();      
+                                            String host = messageInfo.httpService().host();
+                                            int port = messageInfo.httpService().port();
+                                            String scheme = "http";
+                                            if (messageInfo.httpService().secure())
+                                            {
+                                                scheme = "https";
+                                            }
+                                            logging.logToOutput("Sending to playground: (" + method + ") " + url);
                                             BurpTraffic burpTraffic = new BurpTraffic();                                            
-                                            burpTraffic.setBase64RequestBytes(helpers.base64Encode(messageInfo.getRequest()));
-                                            byte[] responseBytes = messageInfo.getResponse();
-                                            if (responseBytes != null && responseBytes.length > 0) {
-                                                burpTraffic.setBase64ResponseBytes(helpers.base64Encode(responseBytes));
+                                            burpTraffic.setBase64RequestBytes(callbacks.utilities().base64Utils().encodeToString(messageInfo.request().toByteArray()));
+                                            ByteArray responseBytes = messageInfo.response().toByteArray();
+                                            if (responseBytes != null && responseBytes.length() > 0) {
+                                                burpTraffic.setBase64ResponseBytes(callbacks.utilities().base64Utils().encodeToString(responseBytes));
                                             }
                                             BurpHttpService bHttpService = new BurpHttpService();
-                                            bHttpService.setHost(httpService.getHost());
-                                            bHttpService.setPort(httpService.getPort());
-                                            bHttpService.setScheme(httpService.getProtocol());
+                                            bHttpService.setHost(host);
+                                            bHttpService.setPort(port);
+                                            bHttpService.setScheme(scheme);
                                             burpTraffic.setHttpService(bHttpService);
                                             burpTraffic.setSessionID(sessionID);
                                             List<BurpTraffic> btList = new ArrayList<BurpTraffic>();
@@ -200,15 +208,12 @@ public class VenariMenuAction extends AbstractAction {
                                                     if (traffic != null && traffic.size() > 0) {
                                                         for (int j = 0; j < traffic.size(); j++) {
                                                             BurpTraffic trafficItem = traffic.get(j);
-                                                            IHttpRequestResponse messageInfo = new RequestResponse(
+                                                            HttpRequestResponse messageInfo = new RequestResponse(
                                                                     trafficItem, callbacks);
-                                                            IRequestInfo requestInfo = callbacks.getHelpers()
-                                                                    .analyzeRequest(messageInfo.getHttpService(),
-                                                                            messageInfo.getRequest());
-                                                            stdout.println(
-                                                                    "Adding to site map: (" + requestInfo.getMethod()
-                                                                            + ") " + requestInfo.getUrl());
-                                                            callbacks.addToSiteMap(messageInfo);
+                                                            String method = messageInfo.request().method();
+                                                            String url = messageInfo.url();
+                                                            logging.logToOutput("Adding to site map: (" + method + ") " + url);
+                                                            callbacks.siteMap().add(messageInfo);
                                                         }
                                                     }
                                                 } else if (change.getType() == TypeEnum.NUMBER_1) { // issue
@@ -219,47 +224,46 @@ public class VenariMenuAction extends AbstractAction {
                                                     BurpIssue burpIssue = restClient.getBurpIssue(token, sessionID,
                                                             change.getID(), applicationName, scanID);
                                                     if (burpIssue != null) {
-                                                        IScanIssue issue = new Issue(burpIssue, callbacks);
-                                                        stdout.println("Found issue: " + issue.getIssueName());
-                                                        IHttpRequestResponse[] httpMessages = issue.getHttpMessages();
-                                                        if (httpMessages != null && httpMessages.length > 0) {
-                                                            stdout.println("Issue locations:");
-                                                            for (int j = 0; j < httpMessages.length; j++) {
-                                                                IHttpRequestResponse messageInfo = httpMessages[j];
-                                                                IRequestInfo requestInfo = callbacks.getHelpers()
-                                                                        .analyzeRequest(messageInfo.getHttpService(),
-                                                                                messageInfo.getRequest());
-                                                                stdout.println("  (" + requestInfo.getMethod() + ") "
-                                                                        + requestInfo.getUrl());
+                                                        AuditIssue issue = new Issue(burpIssue, callbacks);
+                                                        logging.logToOutput("Found issue: " + issue.name());
+                                                        List<HttpRequestResponse> httpMessages = issue.requestResponses();
+                                                        if (httpMessages != null && httpMessages.size() > 0) {
+                                                            logging.logToOutput("Issue locations:");
+                                                            for (int j = 0; j < httpMessages.size(); j++) {
+                                                                HttpRequestResponse messageInfo = httpMessages.get(j);
+                                                                String method = messageInfo.request().method();
+                                                                String url = messageInfo.url();
+                                                                logging.logToOutput("  (" + method + ") "
+                                                                        + url);
                                                             }
                                                         }
-                                                        callbacks.addScanIssue(issue);
+                                                        callbacks.siteMap().add(issue);
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 } catch (Exception innerEx) {
-                                    stdout.println("Error retrieving Venari notifications. " + innerEx.getMessage());
+                                    logging.logToOutput("Error retrieving Venari notifications. " + innerEx.getMessage());
                                     failCount++;
                                 }
                                 try {
                                     Thread.sleep(2000);
                                 } catch (Exception ex) {
-                                    stdout.println(("Thread sleep failed. " + ex.toString()));
+                                    logging.logToOutput(("Thread sleep failed. " + ex.toString()));
                                 }
                                 if (failCount > 10) {
                                     processFlag = false;
                                 }
                             }
-                            stdout.println(finishMessage);
+                            logging.logToOutput(finishMessage);
                         }
                     };
                     new Thread(r).start();
                 }
             }
         } catch (Exception ex) {
-            stdout.println("Unable to execute Venari menu " + menuName + ". " + ex.toString());
+            logging.logToOutput("Unable to execute Venari menu " + menuName + ". " + ex.toString());
         }
 
     }

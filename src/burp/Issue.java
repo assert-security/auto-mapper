@@ -1,91 +1,112 @@
 package burp;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.client.model.BurpHttpService;
 import io.swagger.client.model.BurpIssue;
 import io.swagger.client.model.BurpTraffic;
-import io.swagger.client.model.MatchPosition;
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.http.HttpService;
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.scanner.audit.issues.AuditIssue;
+import burp.api.montoya.scanner.audit.issues.AuditIssueConfidence;
+import burp.api.montoya.scanner.audit.issues.AuditIssueDefinition;
+import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
 
-public class Issue implements IScanIssue {
+public class Issue implements AuditIssue {
 
     private final BurpIssue issue;
-    private URL url;
-    private final IHttpRequestResponse[] httpMessages;
+    private final List<HttpRequestResponse> httpMessages;
 
-    public Issue(BurpIssue issue, IBurpExtenderCallbacks callbacks) throws MalformedURLException {
+    public Issue(BurpIssue issue, MontoyaApi callbacks) throws MalformedURLException {
         this.issue = issue;
-        String urlText = issue.getUrl();
-        if (urlText != null && urlText.length() > 0) {
-            this.url = new URL(issue.getUrl());
-        }
-        List<IHttpRequestResponse> list = new ArrayList<IHttpRequestResponse>();
+        List<HttpRequestResponse> list = new ArrayList<HttpRequestResponse>();
         List<BurpTraffic> traffic = this.issue.getTraffic();
         if (traffic != null && traffic.size() > 0) {
             for (int i=0; i<traffic.size(); i++) {
                 BurpTraffic trafficItem = traffic.get(i);
-                IHttpRequestResponseWithMarkers messageInfo = new RequestResponse(trafficItem, callbacks);
+                HttpRequestResponse messageInfo = new RequestResponse(trafficItem, callbacks);
                 list.add(messageInfo);
             }
         }
-        this.httpMessages = list.toArray(new IHttpRequestResponse[list.size()]);
+        this.httpMessages = list;
     }
 
     @Override
-    public URL getUrl() {
-        return this.url;
+    public HttpService httpService() {
+        BurpHttpService httpService = this.issue.getHttpService();
+        Boolean secure = false;
+        if (httpService.getScheme().startsWith("https"))
+        {
+            secure = true;
+        }
+        return HttpService.httpService(httpService.getHost(), httpService.getPort(), secure);
     }
 
     @Override
-    public String getIssueName() {
+    public String baseUrl() {
+        return httpService().toString();
+    }
+
+    @Override
+    public String name() {
         return issue.getName();
     }
 
     @Override
-    public int getIssueType() {
-        return 0;
+    public String detail() {
+        return issue.getDescription();
     }
 
     @Override
-    public String getSeverity() {
-        return this.issue.getSeverity();
-    }
-
-    @Override
-    public String getConfidence() {
-        return this.issue.getConfidence();
-    }
-
-    @Override
-    public String getIssueBackground() {
+    public String remediation() {
         return null;
     }
 
     @Override
-    public String getRemediationBackground() {
-        return null;
+    public AuditIssueSeverity severity() {
+        String severity = issue.getSeverity();
+        if (severity == "Critical" || severity == "High") 
+        {
+            return AuditIssueSeverity.HIGH;
+        }
+        else if (severity == "Medium") 
+        {
+            return AuditIssueSeverity.MEDIUM;
+        }
+        else if (severity == "Low")
+        {
+            return AuditIssueSeverity.LOW;
+        }
+        else
+        {
+            return AuditIssueSeverity.INFORMATION;
+        }
     }
 
     @Override
-    public String getIssueDetail() {
-        return this.issue.getDescription();
+    public AuditIssueConfidence confidence() {
+        String confidence = issue.getConfidence();
+        if (confidence == "Tentative")
+        {
+            return AuditIssueConfidence.TENTATIVE;
+        }
+        else
+        {
+            return AuditIssueConfidence.CERTAIN;
+        }
     }
 
     @Override
-    public String getRemediationDetail() {
-        return null;
-    }
-
-    @Override
-    public IHttpRequestResponse[] getHttpMessages() {
+    public List<HttpRequestResponse> requestResponses() {
         return this.httpMessages;
     }
 
     @Override
-    public IHttpService getHttpService() {
-        return new HttpService(this.issue.getHttpService());
+    public AuditIssueDefinition definition() {
+        return AuditIssueDefinition.auditIssueDefinition(name(), detail(), null, severity());
     }
 
 }

@@ -1,17 +1,25 @@
-apply plugin: 'java'
+plugins {
+    id 'java'
+}
+
+group 'io.assertsecurity.automapper'
+version '4.0.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    compile 'net.portswigger.burp.extender:burp-extender-api:2.1'
-    compile 'io.swagger:swagger-annotations:1.5.15'
-    compile 'com.squareup.okhttp:okhttp:2.7.5'
-    compile 'com.squareup.okhttp:logging-interceptor:2.7.5'
-    compile 'com.google.code.gson:gson:2.8.1'
-    compile 'io.gsonfire:gson-fire:1.8.0'
-    compile 'org.threeten:threetenbp:1.3.5'
+    implementation 'net.portswigger.burp.extensions:montoya-api:2023.2'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+    implementation 'io.swagger:swagger-annotations:1.6.9'
+    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+    implementation 'com.squareup.okhttp:logging-interceptor:2.7.5'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'io.gsonfire:gson-fire:1.8.5'
+    implementation 'org.threeten:threetenbp:1.6.5'
+
 }
 
 sourceSets {
@@ -25,8 +33,12 @@ sourceSets {
     }
 }
 
-task fatJar(type: Jar) {
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+tasks.withType(Zip) {
+   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

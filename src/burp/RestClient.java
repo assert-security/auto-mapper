@@ -1,9 +1,9 @@
 package burp;
 
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.UUID;
 
+import burp.api.montoya.logging.Logging;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.BurpApi;
 import io.swagger.client.model.BurpIssue;
@@ -17,7 +17,7 @@ public class RestClient {
 
   private final BurpApi burpApi = new BurpApi();
 
-  public RestClient(PrintWriter outputWriter) {
+  public RestClient(Logging outputWriter) {
     burpApi.getApiClient().setBasePath("http://localhost:9001");
   }
 
