@@ -12,9 +12,19 @@ import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.logging.Logging;
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
+import burp.api.montoya.core.ByteArray;
+import burp.api.montoya.core.Marker;
+import burp.api.montoya.scanner.audit.issues.AuditIssueDefinition;
+import burp.api.montoya.http.HttpService;
+
 import io.swagger.client.ApiException;
 import io.swagger.client.model.BurpHttpService;
 import io.swagger.client.model.BurpIssue;
+import io.swagger.client.model.BurpIssueData;
+import io.swagger.client.model.BurpIssueHost;
+import io.swagger.client.model.BurpIssueRequest;
+import io.swagger.client.model.BurpIssueRequestResponse;
+import io.swagger.client.model.BurpIssueResponse;
 import io.swagger.client.model.BurpMenu;
 import io.swagger.client.model.BurpMenuType;
 import io.swagger.client.model.BurpNotification;
@@ -22,6 +32,7 @@ import io.swagger.client.model.BurpNotification.TypeEnum;
 import io.swagger.client.model.BurpNotifications;
 import io.swagger.client.model.BurpTraffic;
 import io.swagger.client.model.ExecuteBurpMenuResult;
+import io.swagger.client.model.MatchPosition;
 
 public class VenariMenuAction extends AbstractAction {
     /**
@@ -34,9 +45,10 @@ public class VenariMenuAction extends AbstractAction {
     private final MontoyaApi callbacks;
     private final BurpMenu menu;
     private final List<HttpRequestResponse> traffic;
+    private final List<AuditIssue> issues;
 
     public VenariMenuAction(BurpMenu menu, RestClient restClient, Logging logging, MontoyaApi callbacks,
-            String sessionID, List<HttpRequestResponse> traffic) {
+            String sessionID, List<HttpRequestResponse> traffic, List<AuditIssue> issues) {
         super(menu.getName());
         this.menu = menu;
         this.restClient = restClient;
@@ -44,6 +56,7 @@ public class VenariMenuAction extends AbstractAction {
         this.sessionID = sessionID;
         this.callbacks = callbacks;
         this.traffic = traffic;
+        this.issues = issues;
     }
 
     private boolean doesMenuNeedTraffic(BurpMenu menu) {
@@ -57,9 +70,21 @@ public class VenariMenuAction extends AbstractAction {
         return ret;
     }
 
+    private boolean doesMenuNeedIssues(BurpMenu menu) {
+        boolean ret = false;
+        try {
+            ret = menu.isNeedIssue();
+        }
+        catch (Exception ex) {
+
+        }
+        return ret;
+    }
+
     private ExecuteBurpMenuResult executeMenuIfPossible(BurpMenu menu, String token) throws ApiException {
         boolean needTraffic = doesMenuNeedTraffic(menu);
-        if (!needTraffic) {
+        boolean needIssues = doesMenuNeedIssues(menu);
+        if (!needTraffic && !needIssues) {
             String menuName = menu.getName();
             ExecuteBurpMenuResult result = restClient.executeBurpMenu(token, sessionID, menu);
             if (result == null) {
@@ -78,6 +103,116 @@ public class VenariMenuAction extends AbstractAction {
         return null;
     }
 
+    private List<MatchPosition> createMatchPositionsFromMarkers(List<Marker> markers) {
+        List<MatchPosition> list = new ArrayList<MatchPosition>();
+        if (markers != null && markers.size() > 0) {
+            for (int i = 0; i < markers.size(); i++) {
+                Marker marker = markers.get(i);
+                MatchPosition matchPosition = new MatchPosition();
+                matchPosition.index(marker.range().startIndexInclusive());
+                matchPosition.length(marker.range().endIndexExclusive() - marker.range().startIndexInclusive());
+                list.add(matchPosition);
+            }
+        }
+        if (list.size() > 0) {
+            return list;
+        }
+        return null;
+    }
+
+    private BurpIssueData createBurpIssueFromAuditIssue(AuditIssue issue, Logging logging) {
+        BurpIssueData burpIssue = new BurpIssueData();
+        burpIssue.name(issue.name());
+        burpIssue.severity(issue.severity().name());
+        HttpService httpService = issue.httpService();
+        if (httpService != null) {
+            BurpIssueHost host = new BurpIssueHost();
+            String h = httpService.host();
+            int port = httpService.port();
+            String scheme = "http://";
+            if (httpService.secure()) {
+                scheme = "https://";
+            }
+            String endpoint = scheme + h;
+            if (port != 80 && port != 443)
+            {
+                endpoint = endpoint + ":" + String.valueOf(port);
+            }
+            host.value(endpoint);
+            burpIssue.host(host);
+        }
+        String detail = issue.detail();
+        if (detail != null && detail.length() > 0) {
+            burpIssue.issueDetail(detail);
+        }
+        String remediation = issue.remediation();
+        if (remediation != null && remediation.length() > 0) {
+            burpIssue.remediationDetail(remediation);
+        }
+        AuditIssueDefinition definition = issue.definition();
+        if (definition != null) {
+            String background = definition.background();
+            if (background != null & background.length() > 0) {
+                burpIssue.issueBackground(background);
+            }
+        }
+        List<HttpRequestResponse> traffic = issue.requestResponses();
+        if (traffic != null && traffic.size() > 0) {
+            ArrayList<BurpIssueRequestResponse> list = new ArrayList<BurpIssueRequestResponse>();
+            for (int i = 0; i < traffic.size(); i++) {
+                HttpRequestResponse messageInfo = traffic.get(i);
+
+                String method = messageInfo.request().method();
+                String url = messageInfo.url();
+                String host = messageInfo.httpService().host();
+                int port = messageInfo.httpService().port();
+                String scheme = "http";
+                if (messageInfo.httpService().secure()) {
+                    scheme = "https";
+                }
+                logging.logToOutput("Sending to playground: (" + method + ") " + url);
+                BurpTraffic burpTraffic = new BurpTraffic();
+                burpTraffic.setBase64RequestBytes(
+                        callbacks.utilities().base64Utils().encodeToString(messageInfo.request().toByteArray()));
+                ByteArray responseBytes = messageInfo.response().toByteArray();
+                if (responseBytes != null && responseBytes.length() > 0) {
+                    burpTraffic
+                            .setBase64ResponseBytes(callbacks.utilities().base64Utils().encodeToString(responseBytes));
+                }
+                BurpHttpService bHttpService = new BurpHttpService();
+                bHttpService.setHost(host);
+                bHttpService.setPort(port);
+                bHttpService.setScheme(scheme);
+                burpTraffic.setHttpService(bHttpService);
+                burpTraffic.setSessionID(sessionID);
+                BurpIssueRequestResponse burprr = new BurpIssueRequestResponse();
+                if (messageInfo.request() != null) {
+                    burprr.httpService(burpTraffic.getHttpService());
+                    BurpIssueRequest request = new BurpIssueRequest();
+                    request.isBase64(true);
+                    request.text(burpTraffic.getBase64RequestBytes());
+                    request.method(messageInfo.request().method());
+                    burprr.request(request);
+                    if (messageInfo.response() != null) {
+                        BurpIssueResponse response = new BurpIssueResponse();
+                        response.isBase64(true);
+                        response.text(burpTraffic.getBase64ResponseBytes());
+                        burprr.response(response);
+                    }
+                }
+                List<Marker> requestMarkers = messageInfo.requestMarkers();
+                burprr.setRequestMarkers(createMatchPositionsFromMarkers(requestMarkers));
+                List<Marker> responseMarkers = messageInfo.responseMarkers();
+                burprr.setResponseMarkers(createMatchPositionsFromMarkers(responseMarkers));
+                list.add(burprr);
+            }
+            if (list.size() > 0) {
+                burpIssue.requestResponses(list);
+            }
+        }
+        return burpIssue;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String menuName = menu.getName();
@@ -94,6 +229,15 @@ public class VenariMenuAction extends AbstractAction {
                 if (doesMenuNeedTraffic(menu)) {
                     if (this.traffic == null || this.traffic.size() == 0) {
                         logging.logToOutput("Unable to execute menu: " + menuName + ". No HTTP traffic selected.");
+                        canProcess = false;
+                    }
+                    else {
+                        logging.logToOutput("Invoking asynchronous menu " + menuName + "...");
+                    }
+                }
+                else if (doesMenuNeedIssues(menu)) {
+                    if (this.issues == null || this.issues.size() == 0) {
+                        logging.logToOutput("Unable to execute menu: " + menuName + ". No issues selected.");
                         canProcess = false;
                     }
                     else {
@@ -130,13 +274,6 @@ public class VenariMenuAction extends AbstractAction {
                         notifications.setIsComplete(true);
                         notifications.setChanges(result.getResultIds());
                         finishMessage = "Finished scan for " + menuName + ".";
-                    } else if (menu.getType() == io.swagger.client.model.BurpMenuType.NUMBER_4) { // Send To Venari
-                        logging.logToOutput("Sending HTTP traffic to Venari Playground.");
-                        List<BurpTraffic> traffic = new ArrayList<BurpTraffic>();
-                        restClient.setBurpTraffic(token, traffic);
-                        finishMessage = "Executing background task to send HTTP traffic.";
-                        logging.logToOutput(finishMessage);
-                        notifications = null;
                     } else {
                         notifications = null;
                         finishMessage = "";
@@ -176,6 +313,18 @@ public class VenariMenuAction extends AbstractAction {
                                             List<BurpTraffic> btList = new ArrayList<BurpTraffic>();
                                             btList.add(burpTraffic);
                                             restClient.setBurpTraffic(token, btList);
+                                            restClient.executeBurpMenu(token, sessionID, menu);
+                                        }
+                                        break;
+                                    }
+                                    else if (menu.getType() == BurpMenuType.NUMBER_6) {
+                                        for (int i=0; i < issues.size(); i++) {
+                                            AuditIssue issue = issues.get(i);
+                                            BurpIssueData burpIssue = createBurpIssueFromAuditIssue(issue, logging);
+                                            logging.logToOutput("Sending to issue to Venari: " + issue.name());
+                                            List<BurpIssueData> issueList = new ArrayList<BurpIssueData>();
+                                            issueList.add(burpIssue);
+                                            restClient.setBurpIssues(token, sessionID, issueList);
                                             restClient.executeBurpMenu(token, sessionID, menu);
                                         }
                                         break;

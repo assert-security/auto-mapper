@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package io.swagger.client.model;
 
 import java.util.Objects;
@@ -24,22 +23,26 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- *     0 &#x3D; Parent ()    1 &#x3D; RunScan ()    2 &#x3D; GetSiteMap ()    3 &#x3D; GetIssues ()    4 &#x3D; GetScan ()    5 &#x3D; SendToVenari ()
+ * 0 &#x3D; Parent () 1 &#x3D; RunScan () 2 &#x3D; GetSiteMap () 3 &#x3D;
+ * GetIssues () 4 &#x3D; GetScan () 5 &#x3D; SendToVenari () 6 &#x3D;
+ * SendIssuesToVenari ()
  */
 @JsonAdapter(BurpMenuType.Adapter.class)
 public enum BurpMenuType {
-  
+
   NUMBER_0(0),
-  
+
   NUMBER_1(1),
-  
+
   NUMBER_2(2),
-  
+
   NUMBER_3(3),
-  
+
   NUMBER_4(4),
-  
-  NUMBER_5(5);
+
+  NUMBER_5(5),
+
+  NUMBER_6(6);
 
   private Integer value;
 
@@ -78,4 +81,3 @@ public enum BurpMenuType {
     }
   }
 }
-

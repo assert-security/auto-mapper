@@ -52,6 +52,9 @@ public class BurpMenu {
   @SerializedName("NeedTraffic")
   private Boolean needTraffic = null;
 
+  @SerializedName("NeedIssue")
+  private Boolean needIssue = null;
+
   public BurpMenu name(String name) {
     this.name = name;
     return this;
@@ -168,6 +171,24 @@ public class BurpMenu {
     this.needTraffic = needTraffic;
   }
 
+  public BurpMenu needIssue(Boolean needIssue) {
+    this.needIssue = needIssue;
+    return this;
+  }
+
+   /**
+   * Get needIssue
+   * @return needIssue
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isNeedIssue() {
+    return needIssue;
+  }
+
+  public void setNeedIssue(Boolean needIssue) {
+    this.needIssue = needIssue;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -183,12 +204,13 @@ public class BurpMenu {
         Objects.equals(this.scanID, burpMenu.scanID) &&
         Objects.equals(this.subMenus, burpMenu.subMenus) &&
         Objects.equals(this.applicationName, burpMenu.applicationName) &&
-        Objects.equals(this.needTraffic, burpMenu.needTraffic);
+        Objects.equals(this.needTraffic, burpMenu.needTraffic) &&
+        Objects.equals(this.needIssue, burpMenu.needIssue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, type, scanID, subMenus, applicationName, needTraffic);
+    return Objects.hash(name, type, scanID, subMenus, applicationName, needTraffic, needIssue);
   }
 
 
@@ -203,6 +225,7 @@ public class BurpMenu {
     sb.append("    subMenus: ").append(toIndentedString(subMenus)).append("\n");
     sb.append("    applicationName: ").append(toIndentedString(applicationName)).append("\n");
     sb.append("    needTraffic: ").append(toIndentedString(needTraffic)).append("\n");
+    sb.append("    needIssue: ").append(toIndentedString(needIssue)).append("\n");
     sb.append("}");
     return sb.toString();
   }

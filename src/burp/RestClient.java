@@ -7,11 +7,13 @@ import burp.api.montoya.logging.Logging;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.BurpApi;
 import io.swagger.client.model.BurpIssue;
+import io.swagger.client.model.BurpIssueData;
 import io.swagger.client.model.BurpMenu;
 import io.swagger.client.model.BurpNotifications;
 import io.swagger.client.model.BurpTraffic;
 import io.swagger.client.model.ExecuteBurpMenuResult;
 import io.swagger.client.model.OperationResultData;
+import io.swagger.client.model.SetBurpIssueData;
 
 public class RestClient {
 
@@ -67,6 +69,16 @@ public class RestClient {
     OperationResultData ret = null;
     burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
     ret = burpApi.apiBurpTrafficPost(traffic);
+    return ret;
+  }
+
+  public OperationResultData setBurpIssues(String token, String sessionID, List<BurpIssueData> issues) throws ApiException {
+    OperationResultData ret = null;
+    burpApi.getApiClient().addDefaultHeader("X-Meta-Venari", token);
+    SetBurpIssueData data = new SetBurpIssueData();
+    data.sessionID(sessionID);
+    data.issues(issues);
+    ret = burpApi.apiBurpIssuesPost(data);
     return ret;
   }
 
