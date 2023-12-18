@@ -221,11 +221,11 @@ public class VenariMenuAction extends AbstractAction {
         {
             return AuditIssueSeverity.HIGH;
         }
-        else if (severity.toLowerCase().contains("Medium")) 
+        else if (severity.toLowerCase().contains("medium")) 
         {
             return AuditIssueSeverity.MEDIUM;
         }
-        else if (severity.toLowerCase().contains("Low"))
+        else if (severity.toLowerCase().contains("low"))
         {
             return AuditIssueSeverity.LOW;
         }
