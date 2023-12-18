@@ -10,11 +10,14 @@ import javax.swing.AbstractAction;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.logging.Logging;
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
-import burp.api.montoya.core.ByteArray;
+import burp.api.montoya.scanner.audit.issues.AuditIssueConfidence;
 import burp.api.montoya.core.Marker;
 import burp.api.montoya.scanner.audit.issues.AuditIssueDefinition;
+import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
 import burp.api.montoya.http.HttpService;
 
 import io.swagger.client.ApiException;
@@ -163,7 +166,7 @@ public class VenariMenuAction extends AbstractAction {
                 HttpRequestResponse messageInfo = traffic.get(i);
 
                 String method = messageInfo.request().method();
-                String url = messageInfo.url();
+                String url = messageInfo.request().url();
                 String host = messageInfo.httpService().host();
                 int port = messageInfo.httpService().port();
                 String scheme = "http";
@@ -211,6 +214,83 @@ public class VenariMenuAction extends AbstractAction {
             }
         }
         return burpIssue;
+    }
+
+    private AuditIssueSeverity convertSeverityFromString(String severity) {
+        if (severity.toLowerCase().contains("critical") || severity.toLowerCase().contains("high")) 
+        {
+            return AuditIssueSeverity.HIGH;
+        }
+        else if (severity.toLowerCase().contains("Medium")) 
+        {
+            return AuditIssueSeverity.MEDIUM;
+        }
+        else if (severity.toLowerCase().contains("Low"))
+        {
+            return AuditIssueSeverity.LOW;
+        }
+        else
+        {
+            return AuditIssueSeverity.INFORMATION;
+        }
+    }
+    
+    private AuditIssueConfidence convertConfidenceFromString(String confidence) {
+        if (confidence == "Tentative")
+        {
+            return AuditIssueConfidence.TENTATIVE;
+        }
+        else
+        {
+            return AuditIssueConfidence.CERTAIN;
+        }
+    }
+
+    private HttpRequestResponse convertToRequestResponse(BurpTraffic trafficItem) {
+        Boolean secure = false;
+        if (trafficItem.getHttpService().getScheme().startsWith("https"))
+        {
+            secure = true;
+        }
+        HttpService httpService = HttpService.httpService(trafficItem.getHttpService().getHost(), trafficItem.getHttpService().getPort(), secure);
+        ByteArray requestBytes = callbacks.utilities().base64Utils().decode(trafficItem.getBase64RequestBytes());
+        ByteArray responseBytes = callbacks.utilities().base64Utils().decode(trafficItem.getBase64ResponseBytes());
+        HttpRequest request = HttpRequest.httpRequest(httpService, requestBytes);
+        HttpResponse response = HttpResponse.httpResponse(responseBytes);
+        List<MatchPosition> reqMarkerList = trafficItem.getRequestMatches();
+        List<Marker> requestMarkers = null;
+        if (reqMarkerList != null && reqMarkerList.size() > 0) {
+            requestMarkers = convertToMarkers(reqMarkerList);
+
+        }
+        List<MatchPosition> respMarkerList = trafficItem.getResponseMatches();
+        List<Marker> responseMarkers = null;
+        if (respMarkerList != null && respMarkerList.size() > 0) {
+            responseMarkers = convertToMarkers(respMarkerList);
+        }   
+        HttpRequestResponse ret =  HttpRequestResponse.httpRequestResponse(request, response);
+        if (requestMarkers != null) {
+            ret = ret.withRequestMarkers(requestMarkers);
+        }
+        if (responseMarkers != null) {
+            ret = ret.withResponseMarkers(responseMarkers);
+        }
+        return ret;
+    }
+
+    private List<Marker> convertToMarkers(List<MatchPosition> matches) {
+        List<Marker> ret = null;
+        ArrayList<Marker> list = new ArrayList<Marker>();
+        if (matches != null && matches.size() > 0) {
+            for (int i = 0; i < matches.size(); i++) {
+                MatchPosition match = matches.get(i);
+                list.add(Marker.marker(match.getIndex(), match.getIndex() + match.getLength()));
+            }
+        }
+        if (list.size() > 0) {
+            ret = list;
+        }
+        return ret;
     }
 
     @Override
@@ -289,7 +369,7 @@ public class VenariMenuAction extends AbstractAction {
                                             HttpRequestResponse messageInfo = traffic.get(i);
 
                                             String method = messageInfo.request().method();
-                                            String url = messageInfo.url();      
+                                            String url = messageInfo.request().url();      
                                             String host = messageInfo.httpService().host();
                                             int port = messageInfo.httpService().port();
                                             String scheme = "http";
@@ -357,10 +437,9 @@ public class VenariMenuAction extends AbstractAction {
                                                     if (traffic != null && traffic.size() > 0) {
                                                         for (int j = 0; j < traffic.size(); j++) {
                                                             BurpTraffic trafficItem = traffic.get(j);
-                                                            HttpRequestResponse messageInfo = new RequestResponse(
-                                                                    trafficItem, callbacks);
+                                                            HttpRequestResponse messageInfo = convertToRequestResponse(trafficItem);
                                                             String method = messageInfo.request().method();
-                                                            String url = messageInfo.url();
+                                                            String url = messageInfo.request().url();
                                                             logging.logToOutput("Adding to site map: (" + method + ") " + url);
                                                             callbacks.siteMap().add(messageInfo);
                                                         }
@@ -373,15 +452,32 @@ public class VenariMenuAction extends AbstractAction {
                                                     BurpIssue burpIssue = restClient.getBurpIssue(token, sessionID,
                                                             change.getID(), applicationName, scanID);
                                                     if (burpIssue != null) {
-                                                        AuditIssue issue = new Issue(burpIssue, callbacks);
-                                                        logging.logToOutput("Found issue: " + issue.name());
+                                                        List<HttpRequestResponse> list = new ArrayList<HttpRequestResponse>();
+                                                        List<BurpTraffic> traffic = burpIssue.getTraffic();
+                                                        if (traffic != null && traffic.size() > 0) {
+                                                            for (int j=0; j<traffic.size(); j++) {
+                                                                BurpTraffic trafficItem = traffic.get(j);                                                                
+                                                                HttpRequestResponse messageInfo = convertToRequestResponse(trafficItem);
+                                                                list.add(messageInfo);
+                                                            }
+                                                        }
+                                                
+                                                        AuditIssueSeverity severity = convertSeverityFromString(burpIssue.getSeverity());
+                                                        AuditIssue issue = AuditIssue.auditIssue(burpIssue.getName(),
+                                                          burpIssue.getDescription(), 
+                                                          null, 
+                                                          burpIssue.getUrl(), 
+                                                          severity,
+                                                          convertConfidenceFromString(burpIssue.getConfidence()),
+                                                          null, null, severity, list);
+                                                        logging.logToOutput("Found issue: " + issue.name() + " Severity: '" + burpIssue.getSeverity() + "'");
                                                         List<HttpRequestResponse> httpMessages = issue.requestResponses();
                                                         if (httpMessages != null && httpMessages.size() > 0) {
                                                             logging.logToOutput("Issue locations:");
                                                             for (int j = 0; j < httpMessages.size(); j++) {
                                                                 HttpRequestResponse messageInfo = httpMessages.get(j);
-                                                                String method = messageInfo.request().method();
-                                                                String url = messageInfo.url();
+                                                                String method = messageInfo.request().method();                                                                
+                                                                String url = messageInfo.request().url();
                                                                 logging.logToOutput("  (" + method + ") "
                                                                         + url);
                                                             }

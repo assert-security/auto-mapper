@@ -25,16 +25,8 @@ import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.ui.contextmenu.ContextMenuItemsProvider;
 import burp.api.montoya.ui.contextmenu.ContextMenuEvent;
 import io.swagger.client.ApiException;
-import io.swagger.client.model.BurpHttpService;
-import io.swagger.client.model.BurpIssueData;
-import io.swagger.client.model.BurpIssueHost;
-import io.swagger.client.model.BurpIssueRequest;
-import io.swagger.client.model.BurpIssueRequestResponse;
-import io.swagger.client.model.BurpIssueResponse;
 import io.swagger.client.model.BurpMenu;
 import io.swagger.client.model.BurpMenuType;
-import io.swagger.client.model.BurpTraffic;
-import io.swagger.client.model.MatchPosition;
 import io.swagger.client.model.OperationResultData;
 
 import java.awt.Component;
